@@ -24,30 +24,24 @@ Class BlogController
             $where .= " AND (title LIKE ? OR content LIKE ?)";
             $value[] = '%'.$_GET['keyword'].'%';
             $value[] = '%'.$_GET['keyword'].'%';
-            // $where .= ' AND title like "%'.$_GET['keyword'].'%" OR content like "%'.$_GET['keyword'].'%"';
-            // $where .= ' AND title like ? OR content like ?';
         }
 
         if(isset($_GET['start_date']) && $_GET['start_date'])
         {
             $where .= "AND created_at >= ?";
             $value[] = $_GET['start_date'];
-            // $where .= " AND created_at >= '{$_GET['start_date']}'";
-            // $where .= " AND created_at >= ?";
         }
 
         if(isset($_GET['end_date']) && $_GET['end_date'])
         {
             $where .= "AND created_at <= ?";
             $value[] = $_GET['end_date'];
-            // $where .= " AND created_at <= ?";
         }
 
         if(isset($_GET['is_show']) && ($_GET['is_show']== 1 || $_GET['is_show']==='0'))
         {
             $where .= "AND is_show = ?";
             $value[] = $_GET['is_show'];
-            // $where .= " AND is_show = ? ";
         }
 
         /************* 排序 *****************/
@@ -95,7 +89,6 @@ Class BlogController
         /*************** 执行 SQL ***************/
         // 预处理  SQL
         $stmt = $pdo->prepare("SELECT * FROM blogs WHERE $where ORDER BY $odby $odway LIMIT $offset,$prepare");
-        // $stmt = $pdo->prepare("SELECT * FROM blogs WHERE $where ORDER BY $odby $odway");
         // 执行 SQL
         $stmt->execute($value);
 
@@ -107,5 +100,29 @@ Class BlogController
             'data' => $data,
             'btns' => $btns,
         ]);
+    }
+
+    public function content_to_html()
+    {
+        // 取日志的数据
+        $pdo = new PDO('mysql:host=127.0.0.1;dbname=blog001', 'root', '');
+        $pdo->exec('SET NAMES utf8');
+
+        $stmt = $pdo->query('SELECT * FROM blogs');
+        $blogs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        ob_start();
+
+        // 生成静态页
+        foreach($blogs as $v)
+        {
+            view('blogs.content', [
+                'blog' => $v,
+            ]);
+
+            $str = ob_get_contents();
+            file_put_contents(ROOT.'public/contents/'.$v['id'].'.html', $str);
+            ob_clean();
+        }
     }
 }
