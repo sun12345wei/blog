@@ -16,6 +16,7 @@ Class BlogController
         view('blogs.index', $data);
     }
 
+    // 为所有的日志生成详情页
     public function content_to_html()
     {
         $blog = new Blog;
@@ -26,5 +27,21 @@ Class BlogController
     {
         $blog = new Blog;
         $blog->index2html();
+    }
+
+    public function display()
+    {
+        // 接收日志ID
+        $id = (int)$_GET['id'];
+
+        $blog = new Blog;
+
+        echo $blog->getDisplay($id);
+    }
+
+    public function displayToDb()
+    {
+        $blog = new Blog;
+        $blog->displayToDb();
     }
 }
